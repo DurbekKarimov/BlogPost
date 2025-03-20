@@ -2,10 +2,10 @@
 
 namespace BlogPostify.Domain.Entities;
 
-public class PostCategory: Auditable
+public class PostCategory: Auditable<int>
 {
-    public long PostId { get; set; }
+    public int PostId { get; set; }
     public Post Post { get; set; }
-    public long CategoryId { get; set; }
+    public int CategoryId { get; set; }
     public Category Category { get; set; }
 }

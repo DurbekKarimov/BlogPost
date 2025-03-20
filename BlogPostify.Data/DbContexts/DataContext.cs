@@ -1,24 +1,19 @@
 ﻿using BlogPostify.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection;
 
 namespace BlogPostify.Data.DbContexts;
 
 public class DataContext : DbContext
 {
-    public DataContext(DbContextOptions<DataContext> options) : base(options) { }
-    public DbSet<User> Users { get; set; }
-    public DbSet<Post> Posts { get; set; }
-    public DbSet<Category> Categories { get; set; }
-    public DbSet<Tag> Tags { get; set; }
-    public DbSet<PostCategory> PostCategories { get; set; }
-    public DbSet<PostTag> PostTags { get; set; }
-    public DbSet<Comment> Comments { get; set; }
-    public DbSet<Like> Likes { get; set; }
-    public DbSet<BookMark> Bookmarks { get; set; }
-    public DbSet<Notification> Notifications { get; set; }
-
+    public DataContext(DbContextOptions<DataContext> options) : base(options)
+    {
+    }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.ApplyConfigurationsFromAssembly(
+           Assembly.GetExecutingAssembly());
+
         // PostCategory - Composite Primary Key
         modelBuilder.Entity<PostCategory>()
             .HasKey(pc => new { pc.PostId, pc.CategoryId });
@@ -48,14 +43,6 @@ public class DataContext : DbContext
             .WithMany(u => u.Posts)
             .HasForeignKey(p => p.UserId)
             .OnDelete(DeleteBehavior.NoAction);
-
-        // User - Comment Relationship
-        modelBuilder.Entity<Comment>()
-            .HasOne(c => c.User)
-            .WithMany(u => u.Comments)
-            .HasForeignKey(c => c.UserId)
-            .OnDelete(DeleteBehavior.NoAction);
-
         // User - Like Relationship
         modelBuilder.Entity<Like>()
             .HasOne(l => l.User)
@@ -69,13 +56,12 @@ public class DataContext : DbContext
             .WithMany(u => u.Bookmarks)
             .HasForeignKey(b => b.UserId)
             .OnDelete(DeleteBehavior.NoAction);
-
-        // User - Notification Relationship
-        modelBuilder.Entity<Notification>()
-            .HasOne(n => n.User)
-            .WithMany(u => u.Notifications)
-            .HasForeignKey(n => n.UserId)
-            .OnDelete(DeleteBehavior.NoAction);
+        // postCategory
+        modelBuilder.Entity<PostCategory>()
+        .HasOne(pc => pc.Category)
+        .WithMany(c => c.PostCategories)
+        .HasForeignKey(pc => pc.CategoryId)
+        .OnDelete(DeleteBehavior.Cascade); // Yoki kerakli o‘zgarish
     }
 
 

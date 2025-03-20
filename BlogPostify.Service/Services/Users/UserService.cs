@@ -14,8 +14,8 @@ namespace BlogPostify.Service.Services.Users;
 public class UserService : IUserService
 {
     private readonly IMapper mapper;
-    private readonly IRepository<User> userRepository;
-    public UserService(IMapper mapper, IRepository<User> userRepository)
+    private readonly IRepository<User,int> userRepository;
+    public UserService(IMapper mapper, IRepository<User,int> userRepository)
     {
         this.mapper = mapper;
         this.userRepository = userRepository;
@@ -29,6 +29,7 @@ public class UserService : IUserService
             .FirstOrDefaultAsync();
         if (user is not null)
             throw new BlogPostifyException(409, "User is already exists");
+
         #region Image
         var imageFileName = Guid.NewGuid().ToString("N") + Path.GetExtension(dto.ProfileImageUrl.FileName);
         var imageRootPath = Path.Combine(WebEnvironmentHost.WebRootPath,
@@ -41,6 +42,7 @@ public class UserService : IUserService
         }
         string imageResult = Path.Combine("Media", "Users", "Images", imageFileName);
         #endregion
+
         var mapped = mapper.Map<User>(dto);
         mapped.CreatedAt = DateTime.UtcNow;
         mapped.ProfileImageUrl = imageResult;
@@ -49,7 +51,7 @@ public class UserService : IUserService
         return mapper.Map<UserForResultDto>(mapped);
     }
 
-    public async Task<UserForResultDto> ModifyAsync(long id, UserForUpdateDto dto)
+    public async Task<UserForResultDto> ModifyAsync(int id, UserForUpdateDto dto)
     {
         var user = await userRepository.SelectAll()
            .Where(u => u.Id == id)
@@ -58,6 +60,7 @@ public class UserService : IUserService
 
         if (user is null)
             throw new BlogPostifyException(404, "User is not found");
+
         #region Image
         var imageFullPath = Path.Combine(WebEnvironmentHost.WebRootPath, user.ProfileImageUrl);
 
@@ -74,6 +77,7 @@ public class UserService : IUserService
         }
         string imageResult = Path.Combine("Media", "Users", "Images", imageFileName);
         #endregion
+
         var mapped = mapper.Map(dto, user);
         mapped.UpdatedAt = DateTime.UtcNow;
         mapped.ProfileImageUrl = imageResult;
@@ -82,7 +86,7 @@ public class UserService : IUserService
         return mapper.Map<UserForResultDto>(mapped);
     }
 
-    public async Task<bool> RemoveAsync(long id)
+    public async Task<bool> RemoveAsync(int id)
     {
         var user = await userRepository.SelectAll()
             .Where(u => u.Id == id)
@@ -91,12 +95,14 @@ public class UserService : IUserService
 
         if (user is null)
             throw new BlogPostifyException(404, "User is not found");
+
         #region Image
         var imageFullPath = Path.Combine(WebEnvironmentHost.WebRootPath, user.ProfileImageUrl);
 
         if (File.Exists(imageFullPath))
             File.Delete(imageFullPath);
         #endregion
+
         await userRepository.DeleteAsync(id);
         return true;
     }
@@ -117,7 +123,7 @@ public class UserService : IUserService
         return mapper.Map<IEnumerable<UserForResultDto>>(users);
     }
     
-    public async Task<UserForResultDto> RetrieveByIdasync(long id)
+    public async Task<UserForResultDto> RetrieveByIdasync(int id)
     {
         var user = await userRepository.SelectAll()
                .Where(u => u.Id == id)

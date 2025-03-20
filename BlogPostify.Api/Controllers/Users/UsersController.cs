@@ -31,21 +31,21 @@ namespace BlogPostify.Api.Controllers.Users
         }
 
         [HttpGet("{id}")]
-        public async Task<Wrapper> GetByIdAsync([FromRoute] long id)
+        public async Task<Wrapper> GetByIdAsync([FromRoute] int id)
         {
             var result = await userService.RetrieveByIdasync(id);
             return new Wrapper(result);
         }
 
         [HttpDelete("{id}")]
-        public async Task<Wrapper> DeleteAsync([FromRoute] long id)
+        public async Task<Wrapper> DeleteAsync([FromRoute] int id)
         {
             var result = await userService.RemoveAsync(id);
             return new Wrapper(result);
         }
 
         [HttpPut("{id}")]
-        public async Task<Wrapper> UpdateAsync([FromRoute] long id, [FromBody] UserForUpdateDto dto)
+        public async Task<Wrapper> UpdateAsync([FromRoute] int id, [FromBody] UserForUpdateDto dto)
         {
             var result = await userService.ModifyAsync(id, dto);
             return new Wrapper(result);

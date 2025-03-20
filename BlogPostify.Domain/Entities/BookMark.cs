@@ -1,10 +1,15 @@
 ﻿using BlogPostify.Domain.Commons;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BlogPostify.Domain.Entities;
 
-public class BookMark : Auditable
+[Table("book_mark")]
+public class BookMark : Auditable<int>
 {
-    public long UserId { get; set; }
+
+    [Column("user_id")]
+    [ForeignKey("User")]
+    public int UserId { get; set; }
     public User User { get; set; }
 
     public long PostId { get; set; }

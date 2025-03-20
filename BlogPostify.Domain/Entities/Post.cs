@@ -2,13 +2,13 @@
 
 namespace BlogPostify.Domain.Entities;
 
-public class Post : Auditable
+public class Post : Auditable<int>
 {
     public string Title { get; set; }
     public string Content { get; set; }
     public string CoverImage { get; set; }
-    public long? UserId { get; set; }
-    public User? User { get; set; }
+    public int UserId { get; set; }
+    public User User { get; set; }
     public bool IsPublished { get; set; }
 
     // Navigation Properties

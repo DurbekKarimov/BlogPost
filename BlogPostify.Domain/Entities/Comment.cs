@@ -2,16 +2,12 @@
 
 namespace BlogPostify.Domain.Entities;
 
-public class Comment : Auditable
+public class Comment : Auditable<long>
 {
     public long PostId { get; set; } 
     public long UserId { get; set; } 
     public string Content { get; set; }
-    public long? ParentCommentId { get; set; } 
-
-    // Navigation Properties
-    public Post Post { get; set; }
-    public User User { get; set; }
+    public long  ParentCommentId { get; set; } 
     public Comment ParentComment { get; set; }
     public ICollection<Comment> Replies { get; set; }
 }

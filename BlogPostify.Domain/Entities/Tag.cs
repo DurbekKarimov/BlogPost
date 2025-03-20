@@ -2,7 +2,7 @@
 
 namespace BlogPostify.Domain.Entities;
 
-public class Tag : Auditable
+public class Tag : Auditable<long>
 {
     public string TagName { get; set; }
 

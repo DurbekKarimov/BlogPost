@@ -1,8 +1,7 @@
 ﻿namespace BlogPostify.Domain.Commons;
 
-public abstract class Auditable
+public abstract class Auditable<T> : BaseModel<T>
 {
-    public long Id { get; set; }
-    public DateTime UpdatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
     public DateTime CreatedAt { get; set; }
 }

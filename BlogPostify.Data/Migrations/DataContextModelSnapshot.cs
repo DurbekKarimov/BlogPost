@@ -24,8 +24,9 @@ namespace BlogPostify.Data.Migrations
 
             modelBuilder.Entity("BlogPostify.Domain.Entities.BookMark", b =>
                 {
-                    b.Property<long>("UserId")
-                        .HasColumnType("bigint");
+                    b.Property<int>("UserId")
+                        .HasColumnType("int")
+                        .HasColumnName("user_id");
 
                     b.Property<long>("PostId")
                         .HasColumnType("bigint");
@@ -33,26 +34,29 @@ namespace BlogPostify.Data.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<long>("Id")
-                        .HasColumnType("bigint");
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
 
-                    b.Property<DateTime>("UpdatedAt")
+                    b.Property<int>("PostId1")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.HasKey("UserId", "PostId");
 
-                    b.HasIndex("PostId");
+                    b.HasIndex("PostId1");
 
-                    b.ToTable("Bookmarks");
+                    b.ToTable("book_mark");
                 });
 
             modelBuilder.Entity("BlogPostify.Domain.Entities.Category", b =>
                 {
-                    b.Property<long>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
+                        .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -65,12 +69,12 @@ namespace BlogPostify.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("UpdatedAt")
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Categories");
+                    b.ToTable("Category");
                 });
 
             modelBuilder.Entity("BlogPostify.Domain.Entities.Comment", b =>
@@ -88,27 +92,33 @@ namespace BlogPostify.Data.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<long?>("ParentCommentId")
+                    b.Property<long>("ParentCommentId")
                         .HasColumnType("bigint");
 
                     b.Property<long>("PostId")
                         .HasColumnType("bigint");
 
-                    b.Property<DateTime>("UpdatedAt")
+                    b.Property<int?>("PostId1")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<long>("UserId")
                         .HasColumnType("bigint");
 
+                    b.Property<int?>("UserId1")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ParentCommentId");
 
-                    b.HasIndex("PostId");
+                    b.HasIndex("PostId1");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId1");
 
-                    b.ToTable("Comments");
+                    b.ToTable("Comment");
                 });
 
             modelBuilder.Entity("BlogPostify.Domain.Entities.Like", b =>
@@ -116,8 +126,8 @@ namespace BlogPostify.Data.Migrations
                     b.Property<long>("PostId")
                         .HasColumnType("bigint");
 
-                    b.Property<long>("UserId")
-                        .HasColumnType("bigint");
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -125,14 +135,19 @@ namespace BlogPostify.Data.Migrations
                     b.Property<long>("Id")
                         .HasColumnType("bigint");
 
-                    b.Property<DateTime>("UpdatedAt")
+                    b.Property<int>("PostId1")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.HasKey("PostId", "UserId");
 
+                    b.HasIndex("PostId1");
+
                     b.HasIndex("UserId");
 
-                    b.ToTable("Likes");
+                    b.ToTable("Like");
                 });
 
             modelBuilder.Entity("BlogPostify.Domain.Entities.Notification", b =>
@@ -153,26 +168,29 @@ namespace BlogPostify.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("UpdatedAt")
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<long>("UserId")
                         .HasColumnType("bigint");
 
+                    b.Property<int?>("UserId1")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId1");
 
-                    b.ToTable("Notifications");
+                    b.ToTable("Notification");
                 });
 
             modelBuilder.Entity("BlogPostify.Domain.Entities.Post", b =>
                 {
-                    b.Property<long>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
+                        .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Content")
                         .IsRequired()
@@ -192,41 +210,41 @@ namespace BlogPostify.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("UpdatedAt")
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<long?>("UserId")
-                        .HasColumnType("bigint");
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Posts");
+                    b.ToTable("Post");
                 });
 
             modelBuilder.Entity("BlogPostify.Domain.Entities.PostCategory", b =>
                 {
-                    b.Property<long>("PostId")
-                        .HasColumnType("bigint");
+                    b.Property<int>("PostId")
+                        .HasColumnType("int");
 
-                    b.Property<long>("CategoryId")
-                        .HasColumnType("bigint");
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<long>("Id")
-                        .HasColumnType("bigint");
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
 
-                    b.Property<DateTime>("UpdatedAt")
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.HasKey("PostId", "CategoryId");
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("PostCategories");
+                    b.ToTable("PostCategory");
                 });
 
             modelBuilder.Entity("BlogPostify.Domain.Entities.PostTag", b =>
@@ -240,17 +258,22 @@ namespace BlogPostify.Data.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<long>("Id")
-                        .HasColumnType("bigint");
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
 
-                    b.Property<DateTime>("UpdatedAt")
+                    b.Property<int>("PostId1")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.HasKey("PostId", "TagId");
 
+                    b.HasIndex("PostId1");
+
                     b.HasIndex("TagId");
 
-                    b.ToTable("PostTags");
+                    b.ToTable("PostTag");
                 });
 
             modelBuilder.Entity("BlogPostify.Domain.Entities.Tag", b =>
@@ -268,21 +291,21 @@ namespace BlogPostify.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("UpdatedAt")
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Tags");
+                    b.ToTable("Tag");
                 });
 
             modelBuilder.Entity("BlogPostify.Domain.Entities.User", b =>
                 {
-                    b.Property<long>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
+                        .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Bio")
                         .IsRequired()
@@ -306,7 +329,7 @@ namespace BlogPostify.Data.Migrations
                     b.Property<int>("Role")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("UpdatedAt")
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("UserName")
@@ -315,14 +338,14 @@ namespace BlogPostify.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users");
+                    b.ToTable("User");
                 });
 
             modelBuilder.Entity("BlogPostify.Domain.Entities.BookMark", b =>
                 {
                     b.HasOne("BlogPostify.Domain.Entities.Post", "Post")
                         .WithMany("Bookmarks")
-                        .HasForeignKey("PostId")
+                        .HasForeignKey("PostId1")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -342,32 +365,25 @@ namespace BlogPostify.Data.Migrations
                     b.HasOne("BlogPostify.Domain.Entities.Comment", "ParentComment")
                         .WithMany("Replies")
                         .HasForeignKey("ParentCommentId")
-                        .OnDelete(DeleteBehavior.NoAction);
-
-                    b.HasOne("BlogPostify.Domain.Entities.Post", "Post")
-                        .WithMany("Comments")
-                        .HasForeignKey("PostId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("BlogPostify.Domain.Entities.User", "User")
-                        .WithMany("Comments")
-                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
+                    b.HasOne("BlogPostify.Domain.Entities.Post", null)
+                        .WithMany("Comments")
+                        .HasForeignKey("PostId1");
+
+                    b.HasOne("BlogPostify.Domain.Entities.User", null)
+                        .WithMany("Comments")
+                        .HasForeignKey("UserId1");
+
                     b.Navigation("ParentComment");
-
-                    b.Navigation("Post");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("BlogPostify.Domain.Entities.Like", b =>
                 {
                     b.HasOne("BlogPostify.Domain.Entities.Post", "Post")
                         .WithMany("Likes")
-                        .HasForeignKey("PostId")
+                        .HasForeignKey("PostId1")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -384,13 +400,9 @@ namespace BlogPostify.Data.Migrations
 
             modelBuilder.Entity("BlogPostify.Domain.Entities.Notification", b =>
                 {
-                    b.HasOne("BlogPostify.Domain.Entities.User", "User")
+                    b.HasOne("BlogPostify.Domain.Entities.User", null)
                         .WithMany("Notifications")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("User");
+                        .HasForeignKey("UserId1");
                 });
 
             modelBuilder.Entity("BlogPostify.Domain.Entities.Post", b =>
@@ -398,7 +410,8 @@ namespace BlogPostify.Data.Migrations
                     b.HasOne("BlogPostify.Domain.Entities.User", "User")
                         .WithMany("Posts")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
 
                     b.Navigation("User");
                 });
@@ -426,7 +439,7 @@ namespace BlogPostify.Data.Migrations
                 {
                     b.HasOne("BlogPostify.Domain.Entities.Post", "Post")
                         .WithMany("PostTags")
-                        .HasForeignKey("PostId")
+                        .HasForeignKey("PostId1")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
