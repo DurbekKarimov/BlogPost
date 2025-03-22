@@ -1,68 +1,156 @@
 ﻿using BlogPostify.Domain.Entities;
+using BlogPostify.Domain.Entities.Users;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System.Reflection;
-
-namespace BlogPostify.Data.DbContexts;
+using System.Text.Json;
 
 public class DataContext : DbContext
 {
-    public DataContext(DbContextOptions<DataContext> options) : base(options)
-    {
-    }
+    public DataContext(DbContextOptions<DataContext> options) : base(options) { }
+    
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.ApplyConfigurationsFromAssembly(
-           Assembly.GetExecutingAssembly());
+        modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+        base.OnModelCreating(modelBuilder);
 
-        // PostCategory - Composite Primary Key
-        modelBuilder.Entity<PostCategory>()
-            .HasKey(pc => new { pc.PostId, pc.CategoryId });
+        // ======================== USER CONFIGURATION ========================
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.Property(u => u.UserName).IsRequired().HasMaxLength(100);
+            entity.Property(u => u.Email).IsRequired().HasMaxLength(200);
+            entity.Property(u => u.Password).IsRequired();
+            entity.Property(u => u.Bio).HasMaxLength(500);
+            entity.Property(u => u.ProfileImageUrl).HasMaxLength(300);
 
-        // PostTag - Composite Primary Key
-        modelBuilder.Entity<PostTag>()
-            .HasKey(pt => new { pt.PostId, pt.TagId });
+            // Navigation Properties
+            entity.HasMany(u => u.Posts)
+                  .WithOne(p => p.User)
+                  .HasForeignKey(p => p.UserId);
 
-        // Like - Composite Primary Key
-        modelBuilder.Entity<Like>()
-            .HasKey(l => new { l.PostId, l.UserId });
+            entity.HasMany(u => u.Comments)
+                  .WithOne(c => c.User)
+                  .HasForeignKey(c => c.UserId);
 
-        // Bookmark - Composite Primary Key
-        modelBuilder.Entity<BookMark>()
-            .HasKey(b => new { b.UserId, b.PostId });
+            entity.HasMany(u => u.Likes)
+                  .WithOne(l => l.User)
+                  .HasForeignKey(l => l.UserId);
 
-        // Comment - Self-referencing Relationship
-        modelBuilder.Entity<Comment>()
-            .HasOne(c => c.ParentComment)
-            .WithMany(c => c.Replies)
-            .HasForeignKey(c => c.ParentCommentId)
-            .OnDelete(DeleteBehavior.NoAction); // Prevent cascade delete cycles
+            entity.HasMany(u => u.Bookmarks)
+                  .WithOne(b => b.User)
+                  .HasForeignKey(b => b.UserId);
 
-        // User - Post Relationship
-        modelBuilder.Entity<Post>()
-            .HasOne(p => p.User)
-            .WithMany(u => u.Posts)
-            .HasForeignKey(p => p.UserId)
-            .OnDelete(DeleteBehavior.NoAction);
-        // User - Like Relationship
-        modelBuilder.Entity<Like>()
-            .HasOne(l => l.User)
-            .WithMany(u => u.Likes)
-            .HasForeignKey(l => l.UserId)
-            .OnDelete(DeleteBehavior.NoAction);
+            entity.HasMany(u => u.Notifications)
+                  .WithOne(n => n.User)
+                  .HasForeignKey(n => n.UserId);
+        });
 
-        // User - Bookmark Relationship
-        modelBuilder.Entity<BookMark>()
-            .HasOne(b => b.User)
-            .WithMany(u => u.Bookmarks)
-            .HasForeignKey(b => b.UserId)
-            .OnDelete(DeleteBehavior.NoAction);
-        // postCategory
-        modelBuilder.Entity<PostCategory>()
-        .HasOne(pc => pc.Category)
-        .WithMany(c => c.PostCategories)
-        .HasForeignKey(pc => pc.CategoryId)
-        .OnDelete(DeleteBehavior.Cascade); // Yoki kerakli o‘zgarish
+        modelBuilder.Entity<Post>(entity =>
+        {
+            entity.Property(p => p.Translations)
+                  .HasColumnType("jsonb")
+                  .HasConversion(
+                      v => JsonSerializer.Serialize(v, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }),
+                      v => JsonSerializer.Deserialize<Dictionary<string, TranslationModel>>(v, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase })
+                  );
+
+            entity.Property(p => p.CoverImage)
+                  .HasMaxLength(500);
+
+            entity.HasOne(p => p.User)
+                  .WithMany(u => u.Posts)
+                  .HasForeignKey(p => p.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasMany(p => p.Comments)
+                  .WithOne(c => c.Post)
+                  .HasForeignKey(c => c.PostId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasMany(p => p.Likes)
+                  .WithOne(l => l.Post)
+                  .HasForeignKey(l => l.PostId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasMany(p => p.Bookmarks)
+                  .WithOne(b => b.Post)
+                  .HasForeignKey(b => b.PostId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasMany(p => p.PostCategories)
+                  .WithOne(pc => pc.Post)
+                  .HasForeignKey(pc => pc.PostId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasMany(p => p.PostTags)
+                  .WithOne(pt => pt.Post)
+                  .HasForeignKey(pt => pt.PostId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // ======================== COMMENT CONFIGURATION ========================
+        modelBuilder.Entity<Comment>(entity =>
+        {
+            entity.Property(c => c.Content).IsRequired();
+
+            // Post bilan bog'lanish
+            entity.HasOne(c => c.Post)
+                  .WithMany(p => p.Comments)
+                  .HasForeignKey(c => c.PostId)
+                  .OnDelete(DeleteBehavior.Cascade); // Agar Post o'chirilsa, Comment ham o'chsin
+
+            // User bilan bog'lanish
+            entity.HasOne(c => c.User)
+                  .WithMany(u => u.Comments)
+                  .HasForeignKey(c => c.UserId)
+                  .OnDelete(DeleteBehavior.Cascade); // Agar User o'chirilsa, Comment ham o'chsin
+
+            // ParentComment (ota kommentariya) bilan bog'lanish
+            entity.HasOne(c => c.ParentComment)
+                  .WithMany(c => c.Replies)
+                  .HasForeignKey(c => c.ParentCommentId)
+                  .OnDelete(DeleteBehavior.Restrict); // Agar ota kommentariya o'chirilsa, javoblar o'chmasin
+
+            // ParentCommentId ni nullable qilish
+            entity.Property(c => c.ParentCommentId)
+                  .IsRequired(false); // Null bo'lishi mumkin
+        });
+        // ======================== LIKE CONFIGURATION ========================
+        modelBuilder.Entity<Like>(entity =>
+        {
+            // Navigation Properties
+            entity.HasOne(l => l.Post)
+                  .WithMany(p => p.Likes)
+                  .HasForeignKey(l => l.PostId);
+
+            entity.HasOne(l => l.User)
+                  .WithMany(u => u.Likes)
+                  .HasForeignKey(l => l.UserId);
+        });
+
+        // ======================== BOOKMARK CONFIGURATION ========================
+        modelBuilder.Entity<BookMark>(entity =>
+        {
+            // Navigation Properties
+            entity.HasOne(b => b.User)
+                  .WithMany(u => u.Bookmarks)
+                  .HasForeignKey(b => b.UserId);
+
+            entity.HasOne(b => b.Post)
+                  .WithMany(p => p.Bookmarks)
+                  .HasForeignKey(b => b.PostId);
+        });
+
+        // ======================== NOTIFICATION CONFIGURATION ========================
+        modelBuilder.Entity<Notification>(entity =>
+        {
+            entity.Property(n => n.Message).IsRequired().HasMaxLength(500);
+            entity.Property(n => n.IsRead).HasDefaultValue(false);
+
+            // Navigation Properties
+            entity.HasOne(n => n.User)
+                  .WithMany(u => u.Notifications)
+                  .HasForeignKey(n => n.UserId);
+        });
     }
-
-
 }

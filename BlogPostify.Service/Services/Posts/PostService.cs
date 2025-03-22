@@ -5,11 +5,11 @@ using BlogPostify.Domain.Entities;
 using BlogPostify.Service.Commons.CollectionExtensions;
 using BlogPostify.Service.Commons.Helpers;
 using BlogPostify.Service.DTOs.Posts;
-using BlogPostify.Service.DTOs.Users;
 using BlogPostify.Service.Exceptions;
 using BlogPostify.Service.Interfaces.Posts;
 using BlogPostify.Service.Interfaces.Users;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace BlogPostify.Service.Services.Posts;
 
@@ -32,10 +32,9 @@ public class PostService : IPostService
     public async Task<PostForResultDto> AddAsync(PostForCreationDto dto)
     {
         var user = await userService.RetrieveByIdasync(dto.UserId)
-            ??throw new BlogPostifyException(404, "User not found");
+            ?? throw new BlogPostifyException(404, "User not found");
 
         #region Image
-        
         var imageFileName = Guid.NewGuid().ToString("N") + Path.GetExtension(dto.CoverImage.FileName);
         var imageRootPath = Path.Combine(WebEnvironmentHost.WebRootPath, "Media", "Posts", "Images", imageFileName);
 
@@ -45,89 +44,90 @@ public class PostService : IPostService
         }
 
         var imageResult = Path.Combine("Media", "Posts", "Images", imageFileName);
-        
         #endregion
 
         var mapped = mapper.Map<Post>(dto);
         mapped.CreatedAt = DateTime.UtcNow;
         mapped.CoverImage = imageResult;
-        await repository.InsertAsync(mapped);
+        mapped.Translations = dto.Translations ?? new Dictionary<string, TranslationModel>(); // ✅ Null emasligiga ishonch hosil qilish
 
+        await repository.InsertAsync(mapped);
         return mapper.Map<PostForResultDto>(mapped);
     }
 
-
-
     public async Task<bool> RemoveAsync(int id)
     {
-        var post = await repository.SelectAll()
-                                              .Where(p => p.Id == id)
-                                              .FirstOrDefaultAsync()
-        ?? throw new BlogPostifyException(404, "Post is not found");
+        var post = await repository.SelectAll().FirstOrDefaultAsync(p => p.Id == id)
+            ?? throw new BlogPostifyException(404, "Post is not found");
 
         await repository.DeleteAsync(id);
         return true;
-        
     }
-
     public async Task<IEnumerable<PostForResultDto>> RetrieveAllAsync(PaginationParams @params)
     {
         var posts = await repository.SelectAll()
-                                              .Include(p => p.Bookmarks)
-                                              .Include(p => p.Comments)
-                                              .Include(p => p.Likes)
-                                              .Include(p => p.PostCategories)
-                                              .Include(p => p.PostTags)
-                                              .ToPagedList(@params)
-                                              .AsNoTracking()
-                                              .ToListAsync();
+                                    .Include(p => p.Bookmarks)
+                                    .Include(p => p.Comments)
+                                    .Include(p => p.Likes)
+                                    .Include(p => p.PostCategories)
+                                    .Include(p => p.PostTags)
+                                    .ToPagedList(@params)
+                                    .AsNoTracking()
+                                    .ToListAsync();
 
-        return mapper.Map<IEnumerable<PostForResultDto>>(posts);
+        return posts.Select(post =>
+        {
+            var dto = mapper.Map<PostForResultDto>(post);
+            dto.Translations = post.Translations; // Deserialize qilish shart emas!
+            return dto;
+        }).ToList();
     }
 
     public async Task<PostForResultDto> RetrieveIdAsync(int id)
     {
         var post = await repository.SelectAll()
-                                               .Where(p => p.Id == id)
-                                               .AsNoTracking()
-                                               .FirstOrDefaultAsync()
+                                   .Where(p => p.Id == id)
+                                   .AsNoTracking()
+                                   .FirstOrDefaultAsync()
         ?? throw new BlogPostifyException(404, "Post is not found");
 
-        return mapper.Map<PostForResultDto>(post);
-        
-    }
+        var result = mapper.Map<PostForResultDto>(post);
+        result.Translations = post.Translations; // JSON deserialize qilish shart emas!
 
-    public async Task<PostForResultDto> ModifyAsync(long id, PostForUpdateDto dto)
+        return result;
+    }
+    public async Task<PostForResultDto> ModifyAsync(int id, PostForUpdateDto dto)
     {
         var post = await repository.SelectAll()
-                                              .Where(p => p.Id == id)
-                                              .AsNoTracking()
-                                              .FirstOrDefaultAsync()
+                                   .Where(p => p.Id == id)
+                                   .FirstOrDefaultAsync()
         ?? throw new BlogPostifyException(404, "Post is not found");
 
         #region Image
-        var imageFullPath = Path.Combine(WebEnvironmentHost.WebRootPath, post.CoverImage);
-
-        if (File.Exists(imageFullPath))
-            File.Delete(imageFullPath);
-
-        var imageFileName = Guid.NewGuid().ToString("N") + Path.GetExtension(dto.CoverImage.FileName);
-        var imageRootPath = Path.Combine(WebEnvironmentHost.WebRootPath, "Media", "Posts", "Images", imageFileName);
-        using (var stream = new FileStream(imageRootPath, FileMode.Create))
+        if (dto.CoverImage != null)
         {
-            await dto.CoverImage.CopyToAsync(stream);
-            await stream.FlushAsync();
-            stream.Close();
+            var imageFullPath = Path.Combine(WebEnvironmentHost.WebRootPath, post.CoverImage);
+            if (File.Exists(imageFullPath))
+                File.Delete(imageFullPath);
+
+            var imageFileName = Guid.NewGuid().ToString("N") + Path.GetExtension(dto.CoverImage.FileName);
+            var imageRootPath = Path.Combine(WebEnvironmentHost.WebRootPath, "Media", "Posts", "Images", imageFileName);
+
+            using (var stream = new FileStream(imageRootPath, FileMode.Create))
+            {
+                await dto.CoverImage.CopyToAsync(stream);
+            }
+
+            post.CoverImage = Path.Combine("Media", "Posts", "Images", imageFileName);
         }
-        string imageResult = Path.Combine("Media", "Posts", "Images", imageFileName);
         #endregion
 
-        var mappad = mapper.Map(dto, post);
-        mappad.UpdatedAt = DateTime.UtcNow;
-        mappad.CoverImage = imageResult;
-        await repository.UpdateAsync(mappad);
+        post.IsPublished = dto.IsPublished;
+        post.Translations = dto.Translations ?? new Dictionary<string, TranslationModel>(); // ✅ Null emasligiga ishonch hosil qilish
+        post.UpdatedAt = DateTime.UtcNow;
 
-        return mapper.Map<PostForResultDto>(mappad);
-
+        await repository.UpdateAsync(post);
+        return mapper.Map<PostForResultDto>(post);
     }
+
 }

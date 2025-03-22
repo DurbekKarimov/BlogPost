@@ -5,7 +5,7 @@
 namespace BlogPostify.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class PostCategoryMigrations : Migration
+    public partial class LanguageMigrions : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

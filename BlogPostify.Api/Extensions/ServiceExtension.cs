@@ -1,13 +1,22 @@
 ﻿using BlogPostify.Data.IRepositories;
 using BlogPostify.Data.Repositories;
+using BlogPostify.Domain.Entities;
+using BlogPostify.Service.Interfaces.BookMarks;
 using BlogPostify.Service.Interfaces.Categories;
+using BlogPostify.Service.Interfaces.Comments;
+using BlogPostify.Service.Interfaces.Likes;
+using BlogPostify.Service.Interfaces.Notifications;
 using BlogPostify.Service.Interfaces.PostCategories;
 using BlogPostify.Service.Interfaces.Posts;
 using BlogPostify.Service.Interfaces.PostTags;
 using BlogPostify.Service.Interfaces.Tags;
 using BlogPostify.Service.Interfaces.Users;
 using BlogPostify.Service.Mappers;
+using BlogPostify.Service.Services.BookMarks;
 using BlogPostify.Service.Services.Categories;
+using BlogPostify.Service.Services.Comments;
+using BlogPostify.Service.Services.Likes;
+using BlogPostify.Service.Services.Notifications;
 using BlogPostify.Service.Services.PostCategories;
 using BlogPostify.Service.Services.Posts;
 using BlogPostify.Service.Services.PostTags;
@@ -25,6 +34,9 @@ public static class ServiceExtension
         //Folder Name: User Service
         services.AddScoped<IUserService, UserService>();
 
+        // Folder Name : User Role Service
+        services.AddScoped<IUserRoleService,UserRoleService>();
+
         // Folder Name : Post Service
         services.AddScoped<IPostService,PostService>();
 
@@ -39,6 +51,18 @@ public static class ServiceExtension
         
         // FOlder Name : PostTag Service
         services.AddScoped<IPostTagService,PostTagService>();
+
+        // FOlder Name : Comment Service
+        services.AddScoped<ICommentService,CommentService>();
+
+        // Folder Name : Like Service
+        services.AddScoped<ILikeService,LikeService>();
+
+        // Folder Name : BookMark Service
+        services.AddScoped<IBookMarkService,BookMarkService>();
+
+        // Folder Name : Notification Service
+        services.AddScoped<INotificationService,NotificationService>();
 
         // Mapping
         services.AddAutoMapper(typeof(MappingProfile));

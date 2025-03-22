@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using BlogPostify.Data.IRepositories;
 using BlogPostify.Domain.Configurations;
-using BlogPostify.Domain.Entities;
+using BlogPostify.Domain.Entities.Users;
 using BlogPostify.Service.Commons.CollectionExtensions;
 using BlogPostify.Service.Commons.Helpers;
 using BlogPostify.Service.DTOs.Users;
@@ -56,10 +56,8 @@ public class UserService : IUserService
         var user = await userRepository.SelectAll()
            .Where(u => u.Id == id)
            .AsNoTracking()
-           .FirstOrDefaultAsync();
-
-        if (user is null)
-            throw new BlogPostifyException(404, "User is not found");
+           .FirstOrDefaultAsync()
+            ??throw new BlogPostifyException(404, "User is not found");
 
         #region Image
         var imageFullPath = Path.Combine(WebEnvironmentHost.WebRootPath, user.ProfileImageUrl);

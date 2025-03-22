@@ -5,9 +5,10 @@ namespace BlogPostify.Service.DTOs.Posts;
 
 public class PostForUpdateDto
 {
-    public string Title { get; set; }
-    public string Content { get; set; }
+    public int UserId { get; set; }
     public IFormFile CoverImage { get; set; }
-    public long UserId { get; set; }
     public bool IsPublished { get; set; }
+
+    // Yangi tarjimalarni saqlash
+    public Dictionary<string, TranslationModel> Translations { get; set; }
 }

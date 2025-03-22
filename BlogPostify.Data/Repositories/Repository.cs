@@ -1,6 +1,5 @@
 ﻿using BlogPostify.Data.IRepositories;
 using Microsoft.EntityFrameworkCore;
-using BlogPostify.Data.DbContexts;
 using BlogPostify.Domain.Commons;
 namespace BlogPostify.Data.Repositories;
 

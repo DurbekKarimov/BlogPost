@@ -15,7 +15,7 @@ public class TagsController : BaseController
         this.tagService = tagService;
     }
     [HttpPost]
-    public async Task<Wrapper> InsertAsync([FromForm] TagForCreationDto dto)
+    public async Task<Wrapper> InsertAsync([FromBody] TagForCreationDto dto)
     {
         var result = await tagService.AddAsync(dto);
         return new Wrapper(result);

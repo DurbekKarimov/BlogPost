@@ -1,17 +1,17 @@
 using BlogPostify.Api.Middlewares;
-using BlogPostify.Data.DbContexts;
 using BlogPostify.Service.Commons.Helpers;
 using BlogPostify.Service.Mappers;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using BlogPostify.Api.Extensions;
+using Serilog;
 
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Data Base
 builder.Services.AddDbContext<DataContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+                options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 #region//// Fix the Cycle
 builder.Services.AddControllers()
@@ -26,13 +26,24 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", builder =>
+    {
+        builder.AllowAnyOrigin()
+               .AllowAnyMethod()
+               .AllowAnyHeader();
+    });
+});
+
 #region //Logger
-//var logger = new LoggerConfiguration()
-//    .ReadFrom.Configuration(builder.Configuration)
-//    .Enrich.FromLogContext()
-//    .CreateLogger();
-//builder.Logging.ClearProviders();
-//builder.Logging.AddSerilog(logger);
+var logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .Enrich.FromLogContext()
+    .CreateLogger();
+builder.Logging.ClearProviders();
+builder.Logging.AddSerilog(logger);
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 builder.Services.AddCors(options =>
 {
@@ -60,6 +71,8 @@ if (app.Environment.IsDevelopment())
 app.UseMiddleware<ExceptionHandlerMiddleware>();
 
 app.UseStaticFiles();
+
+app.UseCors("AllowAll");
 
 app.UseHttpsRedirection();
 

@@ -1,11 +1,13 @@
 ﻿using BlogPostify.Domain.Commons;
+using BlogPostify.Domain.Entities.Users;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BlogPostify.Domain.Entities;
 
 public class Post : Auditable<int>
 {
-    public string Title { get; set; }
-    public string Content { get; set; }
+    [Column(TypeName = "jsonb")] // PostgreSQL uchun
+    public Dictionary<string, TranslationModel> Translations { get; set; } = new();
     public string CoverImage { get; set; }
     public int UserId { get; set; }
     public User User { get; set; }

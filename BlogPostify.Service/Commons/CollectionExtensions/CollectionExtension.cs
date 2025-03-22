@@ -1,6 +1,6 @@
 ﻿using BlogPostify.Domain.Commons;
 using BlogPostify.Domain.Configurations;
-using BlogPostify.Domain.Entities;
+using BlogPostify.Domain.Entities.Users;
 using BlogPostify.Service.Commons.Helpers;
 using BlogPostify.Service.Exceptions;
 using Newtonsoft.Json;
@@ -89,6 +89,26 @@ public static class CollectionExtension
             .Skip((@params.PageIndex - 1) * @params.PageSize)
             .Take(@params.PageSize);
     }
+    public static IQueryable<User> ToPagedList(this IQueryable<User> source, PaginationParams @params)
+    {
+
+        var metaData = new PaginationMetaData(source.Count(), @params);
+
+        var json = JsonConvert.SerializeObject(metaData);
+        if (HttpContextHelper.ResponseHeaders != null)
+        {
+            if (HttpContextHelper.ResponseHeaders.ContainsKey("X-Pagination"))
+                HttpContextHelper.ResponseHeaders.Remove("X-Pagination");
+
+            HttpContextHelper.ResponseHeaders.Add("X-Pagination", json);
+        }
+
+        return @params.PageIndex > 0 && @params.PageSize > 0 ?
+            source
+            .OrderBy(s => s.Id)
+            .Skip((@params.PageIndex - 1) * @params.PageSize).Take(@params.PageSize)
+            : throw new BlogPostifyException(400, "Please, enter valid numbers");
+    }
     public static IEnumerable<TEntity> ToPagedList<TEntity>(this IEnumerable<TEntity> source, PaginationParams @params)
     {
         if (@params.PageIndex < 1)
@@ -103,4 +123,5 @@ public static class CollectionExtension
 
         return source.Take((@params.PageSize * (@params.PageIndex - 1))..(@params.PageSize * (@params.PageIndex - 1) + @params.PageSize));
     }
+
 }
