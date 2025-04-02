@@ -7,7 +7,7 @@ on:
       - master
 
 env: 
-  AZURE_WEBAPP_NAME: BlogPost
+  AZURE_WEBAPP_NAME: MyBlogPost
   AZURE_WEBAPP_PACKAGE_PATH: "./publish"
   DOTNET_VERSION: "8.0.x"
   SOLUTION_PATH: "BlogPostify.sln"
